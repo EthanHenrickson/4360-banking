@@ -1,0 +1,183 @@
+from tinydb import TinyDB, Query
+
+class Bank:
+    def __init__(self):
+        self.db = TinyDB('db.json')
+
+    def locked(self,username):
+        return self.db.search(Query().username == username)[0]['locked']
+
+    def transferBalance(self, fromUsername, toUsername, amount):
+        user1data = self.db.search(Query().username == fromUsername)
+        user2data = self.db.search(Query().username == toUsername)
+
+        if(len(user1data) and len(user2data)):
+            user1amount = user1data[0]['balance']
+            user2amount = user2data[0]['balance']
+
+            if(user1data[0]['balance'] < amount):
+                return "Can't transfer more than you have"
+            self.db.update({"balance": user1amount - amount}, Query().username == fromUsername)
+            self.db.update({"balance": user2amount + amount}, Query().username == toUsername)
+            return f"Success, ${amount} was transferred to {toUsername}"        
+
+    def getBalance(self, username):
+        data = self.db.search(Query().username == username)
+        locked = self.locked(username)
+
+        if(locked):
+            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+
+        return f"Your current balance is {data[0]['balance']}"
+
+    def removeBalance(self, username, amount):
+        data = self.db.search(Query().username == username)
+        prevAmount = data[0]["balance"]
+        locked = self.locked(username)
+
+        if(locked):
+            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+        
+        if(prevAmount < amount):
+            return f"You can't withdraw more than {prevAmount}"
+
+        self.db.update({"balance": prevAmount - amount}, Query().username == username)
+        return f"Success, ${amount} has been removed to your account for a total of ${prevAmount - amount} \n"
+
+    def addBalance(self, username, amount):
+        data = self.db.search(Query().username == username)
+        prevAmount = data[0]["balance"]
+        locked = self.locked(username)
+
+        if(locked):
+            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+
+        self.db.update({"balance": amount + prevAmount}, Query().username == username)
+        return f"Success, ${amount} has been added to your account for a total of ${amount + prevAmount} \n"
+    
+    def addUser(self, name, username, password, initBalance):
+        self.db.insert({'name': name,'username':username,'password':password, 'balance': initBalance, 'locked':False})
+        return f"User {name} created."
+
+    def lockAccount(self, username, password):
+        data = self.db.search(Query().username == username)
+
+        if(data[0]["password"] == password):
+            self.db.update({"locked": True}, Query().username == username)
+            return "Success"
+        else:
+            return "Error, wrong password"
+    
+    def unlockAccount(self, username, password):
+        data = self.db.search(Query().username == username)
+
+        if(data[0]["password"] == password):
+            self.db.update({"locked": False}, Query().username == username)
+            return "Success"
+        else:
+            return "Error, wrong password"
+
+        
+    def login(self, username, password):
+        data = self.db.search(Query().username == username)
+
+        if(len(data) == 0):
+            print("Incorrect Username")
+            return False
+        
+        if (data[0]["password"] == password):
+            print("Successful login")
+            return True
+        else:
+            print("Incorrect Password")
+            return False
+
+
+def main():
+    csbank = Bank()
+    global username
+    username = ""
+
+    baseHelp = f"""
+Welcome to the Bank! Please login or create an account to continue.
+Commands -
+    type 'login' or 'l' to login to your account
+    type 'create account' or 'ca' to create an account
+                """
+    
+    accountHelp = f"""
+Commands -
+    type 'transfer' or 't' to transfer money to another users account
+    type 'deposit' or 'd' to deposit money to your account
+    type 'withdraw' or 'w' to withdraw money from your account
+    type 'get balance' or 'gb' to check your account balance
+    type 'lock account' or 'la' to lock all payments too and from your account
+    type 'unlock account' or 'ua' to unlock your account
+    type 'log out' or 'lo' to log out of your account
+    """
+
+
+    print(baseHelp)
+
+    while True:
+        userInput = input().lower()
+
+        if(username == ""):
+            if(userInput == "login" or userInput == "l"):
+                usernameInput = input("Enter your username: ")
+                passwordInput = input("Enter your password: ")
+                if (csbank.login(usernameInput, passwordInput)):
+                    username = usernameInput
+                    print("Welcome back!")
+                    print(accountHelp)
+
+            elif(userInput == "create account" or userInput == "ca"):
+                    responseName = input("Enter name: ")
+                    responseUsername = input("Enter username: ")
+                    responsePass = input("Enter Password: ")
+                    responseBalanced = int(input("Enter Initial Balance: "))
+                    print(csbank.addUser(responseName, responseUsername, responsePass, responseBalanced))
+
+            elif(userInput == "help" or userInput == "h"):
+                print(baseHelp)
+
+            else:
+                print("Sorry, I dont believe that is a valid command. Type 'help' or 'h' for assistance.")
+        
+        else:
+            if(userInput == "deposit" or userInput == 'd'):
+                response = int(input("Enter amount to deposit in your account: "))
+                print(csbank.addBalance(username, response))
+            
+            elif(userInput == "withdraw" or userInput == "w"):
+                response = int(input("Enter amount to withdraw from your account: "))
+                print(csbank.removeBalance(username, response))
+
+            elif(userInput == "transfer" or userInput == "t"):
+                responseUsername2 = input("Enter the username of the account you want too transfer money too: ")
+                responseAmount = int(input("Enter the amount to transfer: "))
+
+                print(csbank.transferBalance(username, responseUsername2, responseAmount))
+
+            elif(userInput == "get balance" or userInput == "gb"):
+                print(csbank.getBalance(username))
+
+            elif(userInput == "lock account" or userInput == "la"):
+                response = input("Enter password to confirm: ")
+                print(csbank.lockAccount(username, response))
+
+            elif(userInput == "unlock account" or userInput == "ua"):
+                response = input("Enter password to confirm: ")
+                print(csbank.unlockAccount(username, response))
+            
+            elif(userInput == "log out" or userInput == "lo"):
+                username = ""
+                print("You've been logged out. See you soon!")
+
+            elif(userInput == "help" or userInput == "h"):
+                print(accountHelp)
+
+            else:
+                print("Sorry, I dont believe that is a valid command. Type 'help' for assistance.")
+
+main()
