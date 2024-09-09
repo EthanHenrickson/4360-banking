@@ -1,18 +1,1 @@
-{
-  "_default": {
-    "1": {
-      "name": "Ethan Henrickson",
-      "username": "ethanh",
-      "password": "password",
-      "balance": 1445,
-      "locked": false
-    },
-    "2": {
-      "name": "Isabella",
-      "username": "izzy",
-      "password": "1234",
-      "balance": 400,
-      "locked": false
-    }
-  }
-}
+{"_default": {"1": {"name": "Ethan Henrickson", "username": "ethanh", "password": "password", "balance": 1145, "locked": false}, "2": {"name": "Isabella", "username": "izzy", "password": "1234", "balance": 550, "locked": false}, "3": {"name": "Jack Smith", "username": "jacks", "password": "abc123", "balance": 750, "locked": false}}}

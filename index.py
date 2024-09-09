@@ -15,11 +15,13 @@ class Bank:
             user1amount = user1data[0]['balance']
             user2amount = user2data[0]['balance']
 
-            if(user1data[0]['balance'] < amount):
+            if(user1data[0]['balance'] < amount or amount < 0):
                 return "Can't transfer more than you have"
             self.db.update({"balance": user1amount - amount}, Query().username == fromUsername)
             self.db.update({"balance": user2amount + amount}, Query().username == toUsername)
-            return f"Success, ${amount} was transferred to {toUsername}"        
+            return f"Success, ${amount} was transferred to {toUsername}"    
+        else:
+            return "That user does not exist"    
 
     def getBalance(self, username):
         data = self.db.search(Query().username == username)
@@ -97,6 +99,8 @@ def main():
     csbank = Bank()
     global username
     username = ""
+    loginAttempt = 0
+    transferAttempt = 0
 
     baseHelp = f"""
 Welcome to the Bank! Please login or create an account to continue.
@@ -114,13 +118,23 @@ Commands -
     type 'lock account' or 'la' to lock all payments too and from your account
     type 'unlock account' or 'ua' to unlock your account
     type 'log out' or 'lo' to log out of your account
+    type 'exit' or e to quit the bank app
     """
 
 
     print(baseHelp)
 
     while True:
-        userInput = input().lower()
+
+        if(loginAttempt == 3):
+            print("Sorry, that was 3 failed log in attempts. Try again later")
+            break
+
+        if(transferAttempt == 3):
+            print("Sorry, that was 3 failed transfer attempts. Try again later")
+            break
+
+        userInput = input("> ").lower()
 
         if(username == ""):
             if(userInput == "login" or userInput == "l"):
@@ -130,6 +144,9 @@ Commands -
                     username = usernameInput
                     print("Welcome back!")
                     print(accountHelp)
+                else:
+                    loginAttempt += 1
+                    print(f"You have {3 - loginAttempt} attempts left. Create an account if you dont have one.")
 
             elif(userInput == "create account" or userInput == "ca"):
                     responseName = input("Enter name: ")
@@ -157,7 +174,17 @@ Commands -
                 responseUsername2 = input("Enter the username of the account you want too transfer money too: ")
                 responseAmount = int(input("Enter the amount to transfer: "))
 
-                print(csbank.transferBalance(username, responseUsername2, responseAmount))
+                response = csbank.transferBalance(username, responseUsername2, responseAmount)
+                if(response == "That user does not exist"):
+                    transferAttempt += 1
+                    print(f"Invalid account, {3 - transferAttempt} attempts remaining")
+
+                elif(response == "Can't transfer more than you have"):
+                    transferAttempt += 1
+                    print(f"Money error, invalid number or more than you have in your account, {3 - transferAttempt} attempts remaining")
+
+                else:
+                    print(response)
 
             elif(userInput == "get balance" or userInput == "gb"):
                 print(csbank.getBalance(username))
@@ -176,6 +203,10 @@ Commands -
 
             elif(userInput == "help" or userInput == "h"):
                 print(accountHelp)
+
+            elif(userInput == "exit" or userInput == "e"):
+                print("Goodbye!")
+                break
 
             else:
                 print("Sorry, I dont believe that is a valid command. Type 'help' for assistance.")
