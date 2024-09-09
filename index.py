@@ -54,6 +54,8 @@ class Bank:
         if(locked):
             return "Sorry your account is locked, unlock it first with the 'unlock account' command"
 
+        if(amount < 0):
+            return "Sorry you cant deposit negative amounts"
         self.db.update({"balance": amount + prevAmount}, Query().username == username)
         return f"Success, ${amount} has been added to your account for a total of ${amount + prevAmount} \n"
     
