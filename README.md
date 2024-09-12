@@ -56,3 +56,21 @@ Once the bank app is started you must either log in or Create a new account. Thi
 
 `exit` - This will close the bank account
 `help` - This returns a list of commands and descriptions
+
+# Program Planning
+For planning I focused on all the functional requirements and making sure that I had to plan for each one. I started with a class to build out the bank portion as it seemed like the simpliest and easiest way to get it running. Then I just built a main function around the Bank Class and added methods.
+## Functional Requirements
+- Have withdraw method, no overdraft
+- Have deposit method
+- Have a transfer method, max of 3 attempts
+- Allow user to sign in, max of 3 attempts
+- Allow user to sign out
+- Allow user to get balance
+##  Non-Functional Requirements
+- Allowing creation of new users
+- Security
+
+## Design Constraints
+- Must be Python program 
+
+  
