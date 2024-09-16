@@ -42,7 +42,9 @@ class Bank:
         
         if(prevAmount < amount):
             return f"You can't withdraw more than {prevAmount:.2f}"
-
+            
+        if(amount < 0):
+            return "Sorry you cant withdraw negative amounts"
         self.db.update({"balance": prevAmount - amount}, Query().username == username)
         return f"Success, ${amount:.2f} has been removed to your account. You account balance is now ${prevAmount - amount:.2f} \n"
 
