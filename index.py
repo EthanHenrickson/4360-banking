@@ -44,7 +44,7 @@ class Bank:
             return f"You can't withdraw more than {prevAmount:.2f}"
 
         self.db.update({"balance": prevAmount - amount}, Query().username == username)
-        return f"Success, ${amount:.2f} has been removed to your account for a total of ${prevAmount - amount:.2f} \n"
+        return f"Success, ${amount:.2f} has been removed to your account. You account balance is now ${prevAmount - amount:.2f} \n"
 
     def addBalance(self, username, amount):
         data = self.db.search(Query().username == username)
@@ -57,7 +57,7 @@ class Bank:
         if(amount < 0):
             return "Sorry you cant deposit negative amounts"
         self.db.update({"balance": amount + prevAmount}, Query().username == username)
-        return f"Success, ${amount:.2f} has been added to your account for a total of ${amount + prevAmount:.2f} \n"
+        return f"Success, ${amount:.2f} has been added to your account. Your account balance is now ${amount + prevAmount:.2f} \n"
 
     def addUser(self, name, username, password, initBalance):
         self.db.insert({'name': name,'username':username,'password':password, 'balance': initBalance, 'locked':False})
