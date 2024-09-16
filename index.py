@@ -85,17 +85,12 @@ class Bank:
     def login(self, username, password):
         data = self.db.search(Query().username == username)
 
-        if(len(data) == 0):
-            print("Incorrect Username")
-            return False
-        
-        if (data[0]["password"] == password):
-            print("Successful login")
-            return True
-        else:
-            print("Incorrect Password")
+        if(len(data) == 0) or data[0]["password"] != password:
+            print("Incorrect username or password")
             return False
 
+        print("Successful login")
+        return True
 
 def main():
     csbank = Bank()
