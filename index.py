@@ -19,7 +19,7 @@ class Bank:
                 return "Can't transfer more than you have"
             self.db.update({"balance": user1amount - amount}, Query().username == fromUsername)
             self.db.update({"balance": user2amount + amount}, Query().username == toUsername)
-            return f"Success, ${amount} was transferred to {toUsername}"    
+            return f"Success, ${amount:.2f} was transferred to {toUsername}"
         else:
             return "That user does not exist"    
 
@@ -28,9 +28,9 @@ class Bank:
         locked = self.locked(username)
 
         if(locked):
-            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+            return "Sorry, your account is locked, unlock it first with the 'unlock account' command"
 
-        return f"Your current balance is {data[0]['balance']}"
+        return f"Your current balance is {data[0]['balance']:.2f}"
 
     def removeBalance(self, username, amount):
         data = self.db.search(Query().username == username)
@@ -38,13 +38,15 @@ class Bank:
         locked = self.locked(username)
 
         if(locked):
-            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
-        
-        if(prevAmount < amount):
-            return f"You can't withdraw more than {prevAmount}"
+            return "Sorry, your account is locked, unlock it first with the 'unlock account' command"
 
+        if(prevAmount < amount):
+            return f"You can't withdraw more than {prevAmount:.2f}"
+            
+        if(amount < 0):
+            return "Sorry, you cant withdraw negative amounts"
         self.db.update({"balance": prevAmount - amount}, Query().username == username)
-        return f"Success, ${amount} has been removed to your account for a total of ${prevAmount - amount} \n"
+        return f"Success, ${amount:.2f} has been removed to your account. You account balance is now ${prevAmount - amount:.2f} \n"
 
     def addBalance(self, username, amount):
         data = self.db.search(Query().username == username)
@@ -52,13 +54,13 @@ class Bank:
         locked = self.locked(username)
 
         if(locked):
-            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+            return "Sorry, your account is locked, unlock it first with the 'unlock account' command"
 
         if(amount < 0):
-            return "Sorry you cant deposit negative amounts"
+            return "Sorry, you cant deposit negative amounts"
         self.db.update({"balance": amount + prevAmount}, Query().username == username)
-        return f"Success, ${amount} has been added to your account for a total of ${amount + prevAmount} \n"
-    
+        return f"Success, ${amount:.2f} has been added to your account. Your account balance is now ${amount + prevAmount:.2f} \n"
+
     def addUser(self, name, username, password, initBalance):
         self.db.insert({'name': name,'username':username,'password':password, 'balance': initBalance, 'locked':False})
         return f"User {name} created."
@@ -85,17 +87,12 @@ class Bank:
     def login(self, username, password):
         data = self.db.search(Query().username == username)
 
-        if(len(data) == 0):
-            print("Incorrect Username")
-            return False
-        
-        if (data[0]["password"] == password):
-            print("Successful login")
-            return True
-        else:
-            print("Incorrect Password")
+        if(len(data) == 0) or data[0]["password"] != password:
+            print("Incorrect username or password")
             return False
 
+        print("Successful login")
+        return True
 
 def main():
     csbank = Bank()
@@ -154,7 +151,7 @@ Commands -
                     responseName = input("Enter name: ")
                     responseUsername = input("Enter username: ")
                     responsePass = input("Enter Password: ")
-                    responseBalanced = int(input("Enter Initial Balance: "))
+                    responseBalanced = float(input("Enter Initial Balance: "))
                     print(csbank.addUser(responseName, responseUsername, responsePass, responseBalanced))
 
             elif(userInput == "help" or userInput == "h"):
@@ -165,16 +162,16 @@ Commands -
         
         else:
             if(userInput == "deposit" or userInput == 'd'):
-                response = int(input("Enter amount to deposit in your account: "))
+                response = float(input("Enter amount to deposit in your account: "))
                 print(csbank.addBalance(username, response))
             
             elif(userInput == "withdraw" or userInput == "w"):
-                response = int(input("Enter amount to withdraw from your account: "))
+                response = float(input("Enter amount to withdraw from your account: "))
                 print(csbank.removeBalance(username, response))
 
             elif(userInput == "transfer" or userInput == "t"):
                 responseUsername2 = input("Enter the username of the account you want too transfer money too: ")
-                responseAmount = int(input("Enter the amount to transfer: "))
+                responseAmount = float(input("Enter the amount to transfer: "))
 
                 response = csbank.transferBalance(username, responseUsername2, responseAmount)
                 if(response == "That user does not exist"):
