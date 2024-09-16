@@ -28,7 +28,7 @@ class Bank:
         locked = self.locked(username)
 
         if(locked):
-            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+            return "Sorry, your account is locked, unlock it first with the 'unlock account' command"
 
         return f"Your current balance is {data[0]['balance']:.2f}"
 
@@ -38,13 +38,13 @@ class Bank:
         locked = self.locked(username)
 
         if(locked):
-            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
-        
+            return "Sorry, your account is locked, unlock it first with the 'unlock account' command"
+
         if(prevAmount < amount):
             return f"You can't withdraw more than {prevAmount:.2f}"
             
         if(amount < 0):
-            return "Sorry you cant withdraw negative amounts"
+            return "Sorry, you cant withdraw negative amounts"
         self.db.update({"balance": prevAmount - amount}, Query().username == username)
         return f"Success, ${amount:.2f} has been removed to your account. You account balance is now ${prevAmount - amount:.2f} \n"
 
@@ -54,10 +54,10 @@ class Bank:
         locked = self.locked(username)
 
         if(locked):
-            return "Sorry your account is locked, unlock it first with the 'unlock account' command"
+            return "Sorry, your account is locked, unlock it first with the 'unlock account' command"
 
         if(amount < 0):
-            return "Sorry you cant deposit negative amounts"
+            return "Sorry, you cant deposit negative amounts"
         self.db.update({"balance": amount + prevAmount}, Query().username == username)
         return f"Success, ${amount:.2f} has been added to your account. Your account balance is now ${amount + prevAmount:.2f} \n"
 
